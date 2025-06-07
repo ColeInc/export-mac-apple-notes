@@ -66,6 +66,7 @@ the script itself checks if the internet is available. if it is, it completes th
   <false/>
 </dict>
 </plist>
+```
 
 ### environment variables setup
 
