@@ -1,0 +1,1 @@
+this python script exports all notes from the apple notes app on macos to a specified directory on your computer .
