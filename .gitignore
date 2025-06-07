@@ -12,6 +12,7 @@ build/
 venv/
 env/
 .env/
+.env
 .venv/
 
 # IDE
@@ -25,3 +26,6 @@ env/
 
 # Project specific
 exported-notes/ 
+credentials.json
+apple_notes_export.log
+token.pickle
