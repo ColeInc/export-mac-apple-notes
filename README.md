@@ -68,6 +68,18 @@ the script itself checks if the internet is available. if it is, it completes th
 </plist>
 ```
 
+## Upon changes to python script triggered by .plist
+
+Any time you make changes to the python script, you'll need to reload the launch agent for those changes to kick into effect.
+
+unload it:
+launchctl unload ~/Library/LaunchAgents/com.user.uploadapplenotestogdrive.plist
+reload it:
+launchctl load ~/Library/LaunchAgents/com.user.uploadapplenotestogdrive.plist 
+if at any time you want to manually kick the job off to see how it runs:
+launchctl start com.user.uploadapplenotestogdrive   
+
+
 ### environment variables setup
 
 create a `.env` file in the root directory with the following variables:
@@ -87,3 +99,5 @@ to set up:
 2. copy the template above
 3. replace the placeholder values with your actual paths and credentials
 4. ensure the `.env` file is in your `.gitignore` to keep sensitive information secure
+
+
