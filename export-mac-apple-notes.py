@@ -52,7 +52,9 @@ def is_connected():
 
 def log_status(message):
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    log_file = os.getenv('LOG_FILE', 'apple_notes_export.log')
+    # log_file = os.getenv('LOG_FILE', 'apple_notes_export.log')
+    log_file = os.getenv('LOG_FILE', '/tmp/apple_notes_export.log')
+
     with open(log_file, "a") as f:
         f.write(f"{timestamp}: {message}\n")
 
@@ -102,7 +104,7 @@ def export_notes():
         file_path = os.path.join(output_dir, f"{title}.txt")
         with open(file_path, 'w', encoding='utf-8') as f:
             f.write(body)
-    print(f"Exported {len(parsed_notes)} notes to {output_dir}")
+    print(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Exported {len(parsed_notes)} notes to {output_dir}")
 
 def upload_to_drive(service, file_path, folder_id):
     file_metadata = {
@@ -134,6 +136,7 @@ def main():
     if not is_connected():
         log_status("No internet connection available")
         sys.exit(1)
+    log_status("Internet connectivity check successful")
 
     # Step 3: Upload to Google Drive
     if not GOOGLE_DRIVE_FOLDER_ID:
@@ -142,16 +145,23 @@ def main():
 
     try:
         service = get_google_drive_service()
+        log_status("Successfully authenticated with Google Drive")
         successful_uploads = 0
         failed_uploads = 0
+
+        total_files = len([f for f in os.listdir(output_dir) if os.path.isfile(os.path.join(output_dir, f))])
+        log_status(f"Starting upload of {total_files} files to Google Drive")
 
         for filename in os.listdir(output_dir):
             file_path = os.path.join(output_dir, filename)
             if os.path.isfile(file_path):
+                log_status(f"Attempting to upload {filename}")
                 if upload_to_drive(service, file_path, GOOGLE_DRIVE_FOLDER_ID):
                     successful_uploads += 1
+                    log_status(f"Successfully uploaded {filename}")
                 else:
                     failed_uploads += 1
+                    log_status(f"Failed to upload {filename}")
 
         log_status(f"Upload complete. Successfully uploaded {successful_uploads} files, {failed_uploads} failed")
         
