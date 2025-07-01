@@ -106,18 +106,51 @@ def export_notes():
             f.write(body)
     print(f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}: Exported {len(parsed_notes)} notes to {output_dir}")
 
-def upload_to_drive(service, file_path, folder_id):
-    file_metadata = {
-        'name': os.path.basename(file_path),
-        'parents': [folder_id]
-    }
-    media = MediaFileUpload(file_path, mimetype='text/plain', resumable=True)
+def find_existing_file(service, filename, folder_id):
+    """Find an existing file with the same name in the specified folder."""
     try:
-        file = service.files().create(
-            body=file_metadata,
-            media_body=media,
-            fields='id'
+        query = f"name='{filename}' and '{folder_id}' in parents and trashed=false"
+        results = service.files().list(
+            q=query,
+            spaces='drive',
+            fields='files(id, name)'
         ).execute()
+        files = results.get('files', [])
+        return files[0]['id'] if files else None
+    except Exception as e:
+        log_status(f"Error searching for existing file {filename}: {str(e)}")
+        return None
+
+def upload_to_drive(service, file_path, folder_id):
+    filename = os.path.basename(file_path)
+    
+    # Check if file already exists
+    existing_file_id = find_existing_file(service, filename, folder_id)
+    
+    media = MediaFileUpload(file_path, mimetype='text/plain', resumable=True)
+    
+    try:
+        if existing_file_id:
+            # Update existing file
+            file = service.files().update(
+                fileId=existing_file_id,
+                media_body=media,
+                fields='id'
+            ).execute()
+            log_status(f"Updated existing file: {filename}")
+        else:
+            # Create new file
+            file_metadata = {
+                'name': filename,
+                'parents': [folder_id]
+            }
+            file = service.files().create(
+                body=file_metadata,
+                media_body=media,
+                fields='id'
+            ).execute()
+            log_status(f"Created new file: {filename}")
+        
         return True
     except Exception as e:
         log_status(f"Failed to upload {file_path}: {str(e)}")
