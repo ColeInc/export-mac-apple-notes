@@ -4,7 +4,7 @@ import re
 import requests
 import time
 import sys
-from datetime import datetime
+from datetime import datetime, timedelta
 from dotenv import load_dotenv
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
@@ -57,6 +57,39 @@ def log_status(message):
 
     with open(log_file, "a") as f:
         f.write(f"{timestamp}: {message}\n")
+
+# Weekly success tracking
+SUCCESS_TRACKER_FILE = os.path.join(os.path.dirname(__file__), '.last_successful_run')
+
+def get_week_start():
+    """Get the start of the current week (Sunday at midnight)."""
+    today = datetime.now()
+    days_since_sunday = today.weekday() + 1  # Monday=0, so Sunday=6+1=7, but we want Sunday=0
+    if today.weekday() == 6:  # If today is Sunday
+        days_since_sunday = 0
+    else:
+        days_since_sunday = today.weekday() + 1
+    week_start = today - timedelta(days=days_since_sunday)
+    return week_start.replace(hour=0, minute=0, second=0, microsecond=0)
+
+def already_ran_this_week():
+    """Check if we already had a successful run this week."""
+    if not os.path.exists(SUCCESS_TRACKER_FILE):
+        return False
+
+    try:
+        with open(SUCCESS_TRACKER_FILE, 'r') as f:
+            last_run_str = f.read().strip()
+            last_run = datetime.fromisoformat(last_run_str)
+            week_start = get_week_start()
+            return last_run >= week_start
+    except (ValueError, IOError):
+        return False
+
+def record_successful_run():
+    """Record that we had a successful run."""
+    with open(SUCCESS_TRACKER_FILE, 'w') as f:
+        f.write(datetime.now().isoformat())
 
 def get_all_notes():
     script = '''
@@ -157,6 +190,11 @@ def upload_to_drive(service, file_path, folder_id):
         return False
 
 def main():
+    # Step 0: Check if we already ran successfully this week
+    if already_ran_this_week():
+        log_status("Already ran successfully this week - skipping until next Sunday")
+        sys.exit(0)
+
     # Step 1: Export notes to local directory
     try:
         export_notes()
@@ -197,7 +235,12 @@ def main():
                     log_status(f"Failed to upload {filename}")
 
         log_status(f"Upload complete. Successfully uploaded {successful_uploads} files, {failed_uploads} failed")
-        
+
+        # Record successful run so we don't run again until next week
+        if failed_uploads == 0:
+            record_successful_run()
+            log_status("Recorded successful weekly run - will skip until next Sunday")
+
     except Exception as e:
         log_status(f"Failed to upload to Google Drive: {str(e)}")
         sys.exit(1)

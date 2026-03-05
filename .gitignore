@@ -25,7 +25,9 @@ env/
 .DS_Store
 
 # Project specific
-exported-notes/ 
+exported-notes/
 credentials.json
+client_secret*.json
 apple_notes_export.log
 token.pickle
+.last_successful_run

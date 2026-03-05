@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+  "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>com.user.uploadapplenotestogdrive</string>
+
+  <key>ProgramArguments</key>
+  <array>
+    <string>/Users/cole/Cole/PROJECTS/export-mac-apple-notes/venv/bin/python</string>
+    <string>/Users/cole/Cole/PROJECTS/export-mac-apple-notes/export-mac-apple-notes/export-mac-apple-notes.py</string>
+  </array>
+
+  <key>WorkingDirectory</key>
+  <string>/Users/cole/Cole/PROJECTS/export-mac-apple-notes/export-mac-apple-notes</string>
+
+  <key>StartCalendarInterval</key>
+  <dict>
+    <key>Weekday</key>
+    <integer>0</integer>
+    <key>Hour</key>
+    <integer>0</integer>
+    <key>Minute</key>
+    <integer>0</integer>
+  </dict>
+
+  <key>StartInterval</key>
+  <integer>7200</integer>
+
+  <key>StandardOutPath</key>
+  <string>/tmp/uploadapplenotes.log</string>
+
+  <key>StandardErrorPath</key>
+  <string>/tmp/uploadapplenotes.err</string>
+
+  <key>RunAtLoad</key>
+  <false/>
+
+  <key>KeepAlive</key>
+  <false/>
+</dict>
+</plist>
